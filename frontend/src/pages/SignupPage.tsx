@@ -8,23 +8,11 @@ export default function SignupPage() {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://6322si78va.execute-api.ap-northeast-2.amazonaws.com/default';
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // [테스트 모드] 백엔드 미구현 상태에서 프론트엔트 테스트를 위한 Mock 로직
-    if (email === 'test@acc.com' && password === '123456') {
-      localStorage.setItem('userEmail', email);
-      alert('테스트 모드: 가입이 완료되었습니다!');
-      navigate('/');
-      return;
-    } else {
-      alert('회원가입 실패! 테스트용 계정으로만 가입이 가능합니다.\n(이메일: test@acc.com / 비밀번호: 123456)');
-      return;
-    }
-
-    /* 실제 API 연동 코드는 주석 처리해 두었습니다. 백엔드가 준비되면 위 if문 그룹을 지우고 아래 주석을 해제하세요.
     try {
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
@@ -36,18 +24,21 @@ export default function SignupPage() {
       });
 
       if (response.ok) {
-        // 성공 시 이메일을 브라우저 로컬 스토리지에 저장
-        localStorage.setItem('userEmail', email);
-        alert('가입이 완료되었습니다!');
+        const data = await response.json();
+        // 성공 시 토큰과 유저 정보를 브라우저 로컬 스토리지에 저장
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('userId', data.userId);
+        localStorage.setItem('userEmail', data.email);
+        alert('가입(로그인)이 완료되었습니다!');
         navigate('/');
       } else {
-        alert('회원가입에 실패했습니다.');
+        const errorData = await response.json().catch(() => null);
+        alert(errorData?.message || '회원가입에 실패했습니다.');
       }
     } catch (error) {
       console.error('Signup request failed:', error);
       alert('서버와의 통신에 실패했습니다.');
     }
-    */
   };
 
   return (
