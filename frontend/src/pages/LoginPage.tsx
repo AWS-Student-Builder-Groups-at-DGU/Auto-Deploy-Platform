@@ -7,24 +7,11 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://6322si78va.execute-api.ap-northeast-2.amazonaws.com/default';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // [테스트 모드] 백엔드 미구현 상태에서 프론트엔트 테스트를 위한 Mock 로직
-    // 허용할 임의의 테스트 데이터: 이메일 'test@acc.com', 비밀번호 '123456'
-    if (email === 'test@acc.com' && password === '123456') {
-      localStorage.setItem('userEmail', email);
-      console.log('Mock Login successful');
-      navigate('/');
-      return;
-    } else {
-      alert('로그인 실패! 테스트용 계정을 이용해주세요.\n(이메일: test@acc.com / 비밀번호: 123456)');
-      return;
-    }
-
-    /* 실제 API 연동 코드는 주석 처리해 두었습니다. 백엔드가 준비되면 위 if문 그룹을 지우고 아래 주석을 해제하세요.
     try {
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
@@ -35,18 +22,21 @@ export default function LoginPage() {
       });
 
       if (response.ok) {
-        // 성공 시 프론트는 이메일을 브라우저 로컬 스토리지에 저장
-        localStorage.setItem('userEmail', email);
+        const data = await response.json();
+        // 성공 시 프론트는 토큰과 유저 정보를 브라우저 로컬 스토리지에 저장
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('userId', data.userId);
+        localStorage.setItem('userEmail', data.email);
         console.log('Login successful');
         navigate('/');
       } else {
-        alert('로그인에 실패했습니다. (회원가입 및 비밀번호를 다시 확인해주세요)');
+        const errorData = await response.json().catch(() => null);
+        alert(errorData?.message || '로그인에 실패했습니다. (이메일 및 비밀번호를 다시 확인해주세요)');
       }
     } catch (error) {
       console.error('Login request failed:', error);
       alert('서버와의 통신에 실패했습니다.');
     }
-    */
   };
 
   return (

@@ -57,14 +57,109 @@ export default function ProjectDetailPage() {
   const [data, setData] = useState<typeof MOCK_PROJECT_DATA | null>(null);
 
   useEffect(() => {
-    // [테스트 모드] 서버 API 연동 전 임의 데이터 로드
-    // 추후 백엔드 개발 시 fetch('/project/{projectId}') 로 교체
-    setData({
-      ...MOCK_PROJECT_DATA,
-      projectId: projectId || 'PROJ#000',
-      projectName: projectId === 'PROJ#001' ? 'my-first-spring' : (projectId === 'PROJ#002' ? 'react-front' : 'Awesome-APP')
-    });
-  }, [projectId]);
+    const fetchProjectDetails = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('로그인이 필요합니다.');
+        navigate('/login');
+        return;
+      }
+
+      try {
+        const API_URL = import.meta.env.VITE_API_URL || 'https://6322si78va.execute-api.ap-northeast-2.amazonaws.com/default';
+        const response = await fetch(`${API_URL}/projects/${projectId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const resData = await response.json();
+          const p = resData.project;
+
+          // 상태 기반 스텝 생성
+          const generateSteps = (status: string) => {
+            const steps = [
+              { label: '요청 접수', status: '대기' },
+              { label: 'CodeBuild (빌드)', status: '대기' },
+              { label: 'App Runner 배포', status: '대기' },
+              { label: '배포 완료', status: '대기' }
+            ];
+
+            if (status === 'PENDING') {
+              steps[0].status = '완료';
+              steps[1].status = '대기';
+            } else if (status === 'BUILDING') {
+              steps[0].status = '완료';
+              steps[1].status = '진행중';
+            } else if (status === 'DEPLOYING') {
+              steps[0].status = '완료';
+              steps[1].status = '완료';
+              steps[2].status = '진행중';
+            } else if (status === 'SUCCESS') {
+              steps.forEach(s => s.status = '완료');
+            } else if (status === 'FAILED') {
+              steps[0].status = '완료';
+              steps[1].status = '실패';
+              steps[2].status = '대기';
+              steps[3].status = '대기';
+            }
+            return steps;
+          };
+
+          // AI 요약 객체 매핑
+          const getAiSummaryObj = (status: string, aiSummary: string | null, errorMessage: string | null) => {
+            if (status === 'FAILED') {
+              return {
+                statusType: 'error' as const,
+                title: '빌드/배포 실패 감지',
+                description: aiSummary || '실패 원인을 분석 중이거나 요약 정보가 없습니다.',
+                suggestion: errorMessage ? `에러 로그: ${errorMessage}` : ''
+              };
+            } else if (status === 'SUCCESS') {
+              return {
+                statusType: 'success' as const,
+                title: '성공적으로 배포되었습니다',
+                description: aiSummary || '정상 동작 중입니다.',
+                suggestion: ''
+              };
+            }
+            return {
+              statusType: 'info' as const,
+              title: '배포 진행 중',
+              description: '현재 배포 파이프라인이 동작 중입니다.',
+              suggestion: '잠시 후 다시 확인해주세요.'
+            };
+          };
+
+          setData({
+            projectId: p.projectId,
+            projectName: p.projectName,
+            framework: p.projectType,
+            lastDeploy: p.updatedAt ? new Date(p.updatedAt).toLocaleString() : '-',
+            githubUrl: p.githubUrl,
+            branch: 'main', // 백엔드에 branch 정보가 없으므로 임의로 main 표시
+            appRunnerUrl: p.appRunnerUrl,
+            currentStatus: p.status,
+            steps: generateSteps(p.status),
+            aiSummary: getAiSummaryObj(p.status, p.aiSummary, p.errorMessage),
+            resources: MOCK_PROJECT_DATA.resources, // 리소스 사용량은 일단 목업 유지
+            logs: MOCK_PROJECT_DATA.logs // 로그 내역도 일단 목업 유지
+          });
+        } else {
+          console.error('프로젝트 상세 조회 실패');
+          alert('프로젝트를 찾을 수 없거나 권한이 없습니다.');
+          navigate('/mypage');
+        }
+      } catch (error) {
+        console.error('서버와의 통신 오류:', error);
+      }
+    };
+
+    if (projectId) {
+      fetchProjectDetails();
+    }
+  }, [projectId, navigate]);
 
   if (!data) {
     return <div style={{paddingTop: '100px', textAlign: 'center'}}>데이터 준비 중...</div>;

@@ -9,36 +9,41 @@ export default function CreatePage() {
   const [framework, setFramework] = useState('Spring');
   const navigate = useNavigate();
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://6322si78va.execute-api.ap-northeast-2.amazonaws.com/default';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const email = localStorage.getItem('userEmail');
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
 
-    if (!email) {
+    if (!token || !userId) {
       alert('로그인이 필요한 서비스입니다.');
       navigate('/login');
       return;
     }
 
+    const projectTypeMapping: Record<string, string> = {
+      'Spring': 'spring',
+      'Django': 'django',
+      'node js': 'node',
+      'react': 'react',
+      'Flask': 'flask'
+    };
+    const projectType = projectTypeMapping[framework] || 'spring';
+
     const payload = {
-      email,
+      userId,
       projectName,
       githubUrl,
-      framework
+      projectType
     };
-
-    // [테스트 모드] 백엔드 연동 전이라면 아래의 try 구문을 지우고 이걸 사용하세요.
-    // console.log('Mock Create Project:', payload);
-    // alert(`프로젝트 [${projectName}] 배포 요청이 정상적으로 처리되었습니다!\n(테스트 모드)`);
-    // navigate('/mypage'); 
-    // return;
 
     try {
       const response = await fetch(`${API_URL}/projects`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(payload)
       });
@@ -48,11 +53,11 @@ export default function CreatePage() {
         // 배포 후 내 프로젝트 목록을 볼 수 있는 마이페이지로 이동
         navigate('/mypage');
       } else {
-        alert('배포 요청에 실패했습니다.');
+        const errorData = await response.json().catch(() => null);
+        alert(errorData?.message || '배포 요청에 실패했습니다.');
       }
     } catch (error) {
       console.error('Project creation failed:', error);
-      // 서버 에러 시 테스트를 위해 마이페이지로 이동하도록 할 수도 있지만 여기선 alert만 띄움
       alert('서버와의 통신에 실패했습니다.');
     }
   };
