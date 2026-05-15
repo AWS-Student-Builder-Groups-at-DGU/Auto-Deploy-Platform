@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Header from '../components/Header';
 import { useNavigate } from 'react-router-dom';
 
@@ -21,46 +21,36 @@ export default function MyPage() {
   const userName = localStorage.getItem('userEmail')?.split('@')[0] || '사용자';
 
   useEffect(() => {
-    const email = localStorage.getItem('userEmail');
-    if (!email) {
+    const token = localStorage.getItem('token');
+    if (!token) {
       alert('로그인이 필요합니다.');
       navigate('/login');
       return;
     }
 
-    // [테스트 모드] 서버 연동 전 임의의 리스트 2개 출력
-    // 백엔드 API (GET /projects) 가 개발되면 아래 setTimeout 블록을 지우고, 주석 처리된 fetch 코드를 사용하세요.
-    setTimeout(() => {
-      setProjects([
-        {
-          projectId: 'PROJ#001',
-          projectName: 'my-first-spring',
-          status: 'SUCCESS',
-          appRunnerUrl: 'https://xxx.awsapprunner.com',
-          framework: 'Spring', // UI용 가상 데이터
-          createdAt: '1시간 전',
-        },
-        {
-          projectId: 'PROJ#002',
-          projectName: 'react-front',
-          status: 'BUILDING',
-          appRunnerUrl: null,
-          framework: 'react', // UI용 가상 데이터
-          createdAt: '방금',
-        }
-      ]);
-      setLoading(false);
-    }, 500);
-
-    /* 실제 API 연동 코드 - 백엔드 개발 시 활성화
     const fetchProjects = async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-        const response = await fetch(`${API_URL}/projects?email=${email}`);
+        const API_URL = import.meta.env.VITE_API_URL || 'https://6322si78va.execute-api.ap-northeast-2.amazonaws.com/default';
+        const response = await fetch(`${API_URL}/projects`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         
         if (response.ok) {
           const data = await response.json();
-          setProjects(data);
+          // API 응답 형태가 { projects: [...] } 임
+          if (data.projects) {
+            // UI에 맞게 데이터 매핑
+            const mappedProjects = data.projects.map((p: any) => ({
+              ...p,
+              framework: p.projectType, // UI의 framework는 백엔드의 projectType
+              createdAt: p.createdAt ? new Date(p.createdAt).toLocaleString() : '-'
+            }));
+            setProjects(mappedProjects);
+          } else {
+            setProjects([]);
+          }
         } else {
           console.error('리스트 조회 실패');
         }
@@ -71,7 +61,6 @@ export default function MyPage() {
       }
     };
     fetchProjects();
-    */
   }, [navigate]);
 
   return (
