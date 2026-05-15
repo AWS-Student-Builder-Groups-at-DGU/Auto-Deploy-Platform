@@ -1,4 +1,4 @@
-import React from 'react';
+// React import not needed
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import HeroSection from '../components/HeroSection';

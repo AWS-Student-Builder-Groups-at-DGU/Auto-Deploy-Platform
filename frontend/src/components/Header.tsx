@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Star } from 'lucide-react';
+import { Ship } from 'lucide-react';
 
 export default function Header() {
   const navigate = useNavigate();
@@ -26,8 +26,8 @@ export default function Header() {
   return (
     <header className="header">
       <Link to="/" className="logo-container">
-        <Star size={20} />
-        <span>LOGO</span>
+        <Ship size={20} />
+        <span style={{ fontWeight: 800 }}>AutoShip</span>
       </Link>
       <nav className="nav-links" style={{ alignItems: 'center' }}>
         {isLoggedIn ? (
