@@ -1,0 +1,20 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo "PROJECT_ID=$PROJECT_ID PROJECT_TYPE=$PROJECT_TYPE"
+      - echo "GITHUB_URL=$GITHUB_URL"
+      - echo "ECR_IMAGE_URI=$ECR_IMAGE_URI"
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - git clone --depth 1 $GITHUB_URL repo
+      - aws s3 cp s3://autodeploy-build-templates/$PROJECT_TYPE/Dockerfile repo/Dockerfile
+  build:
+    commands:
+      - cd repo
+      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $ECR_IMAGE_URI
+  post_build:
+    commands:
+      - docker push $ECR_IMAGE_URI
+      - echo "Build complete $ECR_IMAGE_URI"

@@ -42,5 +42,3 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-
-# (추후 Spring Boot 등 백엔드 시작 시 target/, bin/ 등 추가 예정)
