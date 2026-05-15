@@ -1,2 +1,46 @@
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor directories and files
 .vscode/
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Node / Frontend Environments (Vite, React)
+node_modules/
+dist/
+dist-ssr/
+build/
+*.local
+.eslintcache
+.tsbuildinfo
+
+# Environment variables (보안상 매우 중요: 절대 깃허브에 커밋되지 않아야 할 환경 설정)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# (추후 Spring Boot 등 백엔드 시작 시 target/, bin/ 등 추가 예정)

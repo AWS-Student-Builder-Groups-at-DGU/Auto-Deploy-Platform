@@ -1,0 +1,122 @@
+.mypage-container {
+  padding-top: calc(var(--header-height) + 60px);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background-color: var(--bg-color);
+  padding-bottom: 60px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.mypage-dashboard {
+  width: 100%;
+  max-width: 1000px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.mypage-greeting {
+  background: linear-gradient(135deg, #1A1D20 0%, #31363F 100%);
+  color: white;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.mypage-greeting h2 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.mypage-greeting p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.table-container {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  overflow-x: auto;
+}
+
+.project-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+.project-table th {
+  padding: 16px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-bottom: 2px solid #F0F2F5;
+  font-size: 0.95rem;
+  background: transparent;
+}
+
+.project-table td {
+  padding: 20px 16px;
+  border-bottom: 1px solid #F0F2F5;
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.project-table tr:hover {
+  background-color: #F8F9FA;
+}
+
+.project-table tr:last-child td {
+  border-bottom: none;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.status-badge.success {
+  background-color: rgba(40, 167, 69, 0.1);
+  color: #28a745;
+}
+
+.status-badge.building, .status-badge.pending {
+  background-color: rgba(255, 193, 7, 0.1);
+  color: #ffc107;
+}
+
+.status-badge.failed {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+.url-link {
+  color: var(--primary-color);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.url-link:hover {
+  text-decoration: underline;
+}
+
+.font-semibold {
+  font-weight: 700;
+}
+
+.text-primary-color {
+  color: var(--primary-color);
+}
+
+.text-muted {
+  color: #868E96;
+}
