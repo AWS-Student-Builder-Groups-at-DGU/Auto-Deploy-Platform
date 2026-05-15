@@ -33,8 +33,7 @@ const MOCK_PROJECT_DATA = {
   },
   resources: {
     cpu: '82%',
-    memory: '1.2 GB',
-    disk: '15 GB'
+    memory: '1.2 GB'
   },
   logs: [
     { text: 'Waiting for deployment dispatch...', type: 'normal' },
@@ -94,9 +93,25 @@ export default function ProjectDetailPage() {
             }
           }
 
+          // AI 요약과 로그 분리
+          let actualAiSummary = p.aiSummary;
+          let parsedLogs = null;
+          
+          if (p.aiSummary && p.aiSummary.includes('###LOGS###')) {
+            const parts = p.aiSummary.split('###LOGS###');
+            actualAiSummary = parts[0];
+            try {
+              parsedLogs = JSON.parse(parts[1]);
+            } catch (e) { console.error('Failed to parse embedded logs'); }
+          }
+
           // 로그 데이터 파싱
           let logsArr: { text: string; type: 'normal' | 'error' | 'success' }[] = [];
-          if (logsRes) {
+          if (parsedLogs && Array.isArray(parsedLogs) && parsedLogs.length > 0) {
+            logsArr = parsedLogs.map((logStr: string) => ({ text: logStr, type: 'error' }));
+          } else if (p.recentLogs && Array.isArray(p.recentLogs) && p.recentLogs.length > 0) {
+            logsArr = p.recentLogs.map((logStr: string) => ({ text: logStr, type: 'error' }));
+          } else if (logsRes) {
             if (logsRes.ok) {
               const lData = await logsRes.json().catch(() => ({}));
               if (lData.logs && Array.isArray(lData.logs)) {
@@ -185,11 +200,10 @@ export default function ProjectDetailPage() {
             appRunnerUrl: p.appRunnerUrl,
             currentStatus: p.status,
             steps: generateSteps(p.status),
-            aiSummary: getAiSummaryObj(p.status, p.aiSummary, p.errorMessage),
+            aiSummary: getAiSummaryObj(p.status, actualAiSummary, p.errorMessage),
             resources: {
               cpu: cpuVal,
-              memory: memoryVal,
-              disk: '-' // 디스크 모니터링은 현재 API에 없으므로 기본값
+              memory: memoryVal
             },
             logs: logsArr
           });
@@ -307,10 +321,6 @@ export default function ProjectDetailPage() {
                 <span className="resource-label">Memory 사용량</span>
                 <span className="resource-value">{data.resources.memory}</span>
               </div>
-              <div className="resource-item">
-                <span className="resource-label">Disk 사용량</span>
-                <span className="resource-value">{data.resources.disk}</span>
-              </div>
             </div>
           </div>
 
@@ -318,9 +328,6 @@ export default function ProjectDetailPage() {
           <div className="panel span-8" style={{display: 'flex', flexDirection: 'column'}}>
             <div className="panel-header" style={{marginBottom: '16px'}}>
               최근 로그
-              <div style={{display:'flex', gap: '10px'}}>
-                <button className="action-btn secondary" style={{padding: '6px 12px', fontSize: '0.8rem'}}>라이브 로그 활성화</button>
-              </div>
             </div>
             <div className="terminal-container">
               {data.logs.map((log, idx) => (

@@ -28,7 +28,7 @@ def lambda_handler(event, context):
         summary = analyze_logs_with_bedrock(log_events)
         
         # 3. DynamoDB 업데이트
-        update_project_summary(project_id, summary)
+        update_project_summary(project_id, summary, log_events)
         
         return {
             'statusCode': 200,
@@ -97,7 +97,7 @@ def analyze_logs_with_bedrock(log_events):
     
     try:
         response = bedrock_client.invoke_model(
-            modelId='anthropic.claude-3-sonnet-20240229-v1:0',
+            modelId='anthropic.claude-3-haiku-20240307-v1:0',
             body=json.dumps({
                 "anthropic_version": "bedrock-2023-05-31",
                 "max_tokens": 500,
@@ -117,14 +117,18 @@ def analyze_logs_with_bedrock(log_events):
         logger.error(f"Error calling Bedrock: {str(e)}")
         return f"로그 분석 중 오류가 발생했습니다: {str(e)}"
 
-def update_project_summary(project_id, summary):
-    """DynamoDB에 AI 요약 업데이트"""
+def update_project_summary(project_id, summary, log_events):
+    """DynamoDB에 AI 요약 업데이트 (백엔드 DTO 필터링을 우회하기 위해 summary에 로그를 합쳐서 저장)"""
     try:
+        # 로그를 JSON 문자열로 변환 후 특수 구분자와 함께 summary에 합침
+        logs_json = json.dumps(log_events, ensure_ascii=False)
+        combined_summary = f"{summary}###LOGS###{logs_json}"
+        
         table.update_item(
             Key={'projectId': project_id},
             UpdateExpression='SET aiSummary = :summary, updatedAt = :timestamp',
             ExpressionAttributeValues={
-                ':summary': summary,
+                ':summary': combined_summary,
                 ':timestamp': datetime.now().isoformat()
             }
         )
