@@ -1,6 +1,8 @@
 # **🚀 AutoDeploy Platform**
 
-> GitHub Repository URL만 입력하면 자동으로 컨테이너를 빌드하고 배포해주는 서버리스 미니 PaaS
+GitHub Repository URL만 입력하면 자동으로 컨테이너를 빌드하고 배포해주는 서버리스 미니 PaaS
+
+접속 링크: https://d2oikwgfftn7km.cloudfront.net/
 
 ## **서비스 개요**
 
